@@ -6,8 +6,7 @@ import {Admin, Resource, Layout, Loading} from "react-admin";
 import {createMuiTheme} from "@material-ui/core/styles";
 import pink from "@material-ui/core/colors/pink";
 import {makeStyles} from "@material-ui/core/styles";
-import fakeDataProvider from "ra-data-fakerest";
-import {ExplorerHome} from "./ExplorerHome/ExplorerHome";
+import {ExplorerHome} from "./ExplorerHome/ExplorerHome";      
 import {ProfilePage} from "./Profile/ProfilePage";
 import WeightsConfigSection from "./Explorer/WeightsConfigSection";
 import {LedgerAdmin} from "./LedgerAdmin";
@@ -15,6 +14,8 @@ import {CredGrainView} from "../../core/credGrainView";
 import {AccountOverview} from "./AccountOverview";
 import {Transfer} from "./Transfer";
 import {SpecialDistribution} from "./SpecialDistribution";
+import {ConfigMgr} from "./ConfigMgr";
+import {TestForm} from "./TestForm";
 import {load, type LoadResult, type LoadSuccess} from "../load";
 import {type CurrencyDetails} from "../../api/currencyConfig";
 import {withRouter} from "react-router-dom";
@@ -25,8 +26,7 @@ import {LedgerViewer} from "./LedgerViewer/LedgerViewer";
 import {type PluginDeclarations} from "../../analysis/pluginDeclaration";
 import {type WeightsT} from "../../core/weights";
 import {Web3ContextProvider} from "../utils/Web3Context";
-
-const dataProvider = fakeDataProvider({}, true);
+import sourcecredDataProvider from "../utils/sourcecredDataProvider";
 
 const theme = createMuiTheme({
   palette: {
@@ -98,7 +98,7 @@ const customRoutes = (
   credGrainView: CredGrainView | null,
   pluginDeclarations: PluginDeclarations,
   isDev: boolean,
-  weights: WeightsT
+  weights: WeightsT,
 ) => {
   const [weightsState, setWeightsState] = useState<{weights: WeightsT}>({
     weights,
@@ -137,6 +137,20 @@ const customRoutes = (
             pluginDeclarations={pluginDeclarations}
             weights={weightsState.weights}
             setWeightsState={setWeightsState}
+          />
+        </Route>,
+        <Route key="config-mgr" exact path="/config-mgr">
+          <ConfigMgr 
+            resource="GrainConfig"
+            basePath="GrainConfig"
+            id="1"
+          />
+        </Route>,
+        <Route key="test-form" exact path="/test-form" >
+          <TestForm
+            resource="FruitConfig"
+            basePath="FruitConfig"
+            id="1"
           />
         </Route>,
       ]
@@ -189,6 +203,7 @@ const AdminApp = (): ReactNode => {
  */
 const AdminInner = ({loadResult: loadSuccess}: AdminInnerProps) => {
   const history = useHistory();
+  const dataProvider = sourcecredDataProvider("foo");
 
   return (
     // TODO (@topocount) create context for read-only instance state
@@ -206,14 +221,12 @@ const AdminInner = ({loadResult: loadSuccess}: AdminInnerProps) => {
             loadSuccess.credGrainView,
             Array.from(loadSuccess.bundledPlugins.values()),
             loadSuccess.isDev,
-            loadSuccess.weights
+            loadSuccess.weights,
           )}
         >
-          {/*
-            This dummy resource is required to get react
-            admin working beyond the hello world screen
-          */}
-          <Resource name="dummyResource" />
+          {}
+          <Resource name="GrainConfig" edit={ConfigMgr}/>
+          <Resource name="FruitConfig" edit={TestForm}/>
         </Admin>
       </Web3ContextProvider>
     </LedgerProvider>
